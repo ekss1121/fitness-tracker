@@ -50,6 +50,49 @@ def test_log_activity_and_list(monkeypatch, tmp_path):
     assert body[0]["user"] == "alice"
 
 
+def test_log_food_and_list(monkeypatch, tmp_path):
+    _use_temp_db(monkeypatch, tmp_path)
+    client = TestClient(app)
+
+    response = client.post(
+        "/foods",
+        json={"name": "Oatmeal", "calories": 150, "date": "2024-06-03"},
+    )
+
+    assert response.status_code == 201
+    assert response.json()["name"] == "Oatmeal"
+
+    foods = client.get("/foods")
+
+    assert foods.status_code == 200
+    body = foods.json()
+    assert len(body) == 1
+    assert body[0]["name"] == "Oatmeal"
+    assert body[0]["calories"] == 150
+
+
+def test_list_logs(monkeypatch, tmp_path):
+    _use_temp_db(monkeypatch, tmp_path)
+    client = TestClient(app)
+
+    client.post(
+        "/foods",
+        json={"name": "Toast", "calories": 120, "date": "2024-06-04"},
+    )
+    client.post(
+        "/activities",
+        json={"name": "Swim", "calories": -400, "date": "2024-06-04"},
+    )
+
+    logs = client.get("/logs")
+
+    assert logs.status_code == 200
+    body = logs.json()
+    assert len(body) == 2
+    assert body[0]["name"] == "Toast"
+    assert body[1]["name"] == "Swim"
+
+
 def test_daily_summary(monkeypatch, tmp_path):
     _use_temp_db(monkeypatch, tmp_path)
     client = TestClient(app)

@@ -33,6 +33,9 @@ This installs dependencies and the console script `fitness-tracker`.
 - List activities: `GET /activities?user=alice`
 - Daily summary for a date: `GET /summary?user=alice&date=2024-06-01` (date defaults to today)
 - Log an activity: `POST /activities` with JSON body `{ "user": "alice", "name": "Swim", "calories": -250, "date": "2024-06-01" }`
+- List foods: `GET /foods`
+- List all logs: `GET /logs`
+- Log a food: `POST /foods` with JSON body `{ "name": "Toast", "calories": 120, "date": "2024-06-01" }`
 
 ### Development
 - Run app directly: `uv run python main.py`

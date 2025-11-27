@@ -7,6 +7,12 @@ from pydantic import BaseModel, Field
 from events import Event, get_events, log_event
 
 
+class LogEventRequest(BaseModel):
+    name: str = Field(..., min_length=1)
+    calories: float
+    date: str | None = None
+
+
 class Activity(BaseModel):
     user: str
     name: str
@@ -18,7 +24,13 @@ class LogEventRequest(BaseModel):
     user: str = Field(..., min_length=1)
     name: str = Field(..., min_length=1)
     calories: float
-    date: str | None = None
+    date: str
+
+
+class LogEntry(BaseModel):
+    name: str
+    calories: float
+    date: str
 
 
 class DailySummary(BaseModel):
@@ -57,6 +69,25 @@ def list_activities(user: str) -> List[Activity]:
         Activity(user=event.user, name=event.name, calories=event.calories, date=event.date)
         for event in events
         if event.calories < 0
+    ]
+
+
+@app.get("/foods", response_model=List[Food])
+def list_foods() -> List[Food]:
+    events = get_events()
+    return [
+        Food(name=event.name, calories=event.calories, date=event.date)
+        for event in events
+        if event.calories > 0
+    ]
+
+
+@app.get("/logs", response_model=List[LogEntry])
+def list_logs() -> List[LogEntry]:
+    events = get_events()
+    return [
+        LogEntry(name=event.name, calories=event.calories, date=event.date)
+        for event in events
     ]
 
 
