@@ -16,6 +16,19 @@ def _ensure_table_exists(connection: sqlite3.Connection) -> None:
         )
         """
     )
+    _ensure_user_column(connection)
+
+
+def _ensure_user_column(connection: sqlite3.Connection) -> None:
+    """Add the required user column if upgrading from a legacy schema."""
+    cursor = connection.execute(f"PRAGMA table_info({TABLE_NAME})")
+    column_names = [row[1] for row in cursor.fetchall()]
+    if "user" in column_names:
+        return
+
+    connection.execute(
+        f"ALTER TABLE {TABLE_NAME} ADD COLUMN user TEXT NOT NULL DEFAULT ''"
+    )
 
 
 def insert_event(user: str, name: str, calories: float, event_date: str) -> None:

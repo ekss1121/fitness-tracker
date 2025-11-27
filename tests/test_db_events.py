@@ -1,4 +1,7 @@
+import sqlite3
+
 import db
+from config import TABLE_NAME
 from events import Event, get_events, log_event
 
 
@@ -33,3 +36,34 @@ def test_log_event_and_get_events(monkeypatch, tmp_path):
     assert [e.name for e in events] == ["Banana", "Running 5K"]
     assert events[0].calories == 105.5
     assert events[1].calories == -300
+
+
+def test_migrates_legacy_schema(monkeypatch, tmp_path):
+    test_db = _use_temp_db(monkeypatch, tmp_path)
+
+    with sqlite3.connect(test_db) as connection:
+        connection.execute(
+            f"""
+            CREATE TABLE {TABLE_NAME} (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                calories REAL NOT NULL,
+                event_date TEXT NOT NULL
+            )
+            """
+        )
+        connection.execute(
+            f"INSERT INTO {TABLE_NAME} (name, calories, event_date) VALUES (?, ?, ?)",
+            ("Soup", 150, "2024-01-01"),
+        )
+
+    db.insert_event("alice", "Salad", 200, "2024-01-02")
+
+    with sqlite3.connect(test_db) as connection:
+        columns = [row[1] for row in connection.execute(f"PRAGMA table_info({TABLE_NAME})")]
+
+    assert "user" in columns
+    assert db.fetch_events() == [
+        ("", "Soup", 150.0, "2024-01-01"),
+        ("alice", "Salad", 200.0, "2024-01-02"),
+    ]
