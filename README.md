@@ -4,7 +4,7 @@ A simple calorie tracker that logs food and activities to a local SQLite databas
 Now also exposes a small FastAPI server for logging activities and retrieving summaries.
 
 ### Features
-- Log food (positive calories) and activities (negative calories) to `main.db`.
+- Log food (positive calories) and activities (negative calories) to `main.db`, scoped per user.
 - View totals for food, activities, and net calories via CLI.
 - Python modules split into config (`config.py`), DB access (`db.py`), and event helpers (`events.py`).
 - Pytest coverage for DB and event logging (`tests/`).
@@ -21,20 +21,20 @@ uv sync
 This installs dependencies and the console script `fitness-tracker`.
 
 ### CLI Usage
-- Show summary (default): `uv run fitness-tracker`
-- Explicit summary: `uv run fitness-tracker show`
-- Log entry: `uv run fitness-tracker log "Apple" 95`
-- Log negative calories (activities): `uv run fitness-tracker log "Running 5K" -- -300`
+- Show summary (default user `default`): `uv run fitness-tracker`
+- Explicit summary: `uv run fitness-tracker show --user alice`
+- Log entry: `uv run fitness-tracker log "Apple" 95 --user alice`
+- Log negative calories (activities): `uv run fitness-tracker log "Running 5K" -- -300 --user alice`
   - The `--` separates options from a negative number.
 - Custom date: `uv run fitness-tracker log "Yoga" -150 --date 2025-01-05`
 
 ### API Usage
 - Start the server: `uv run uvicorn api:app --reload`
-- List activities: `GET /activities`
+- List activities: `GET /activities?user=alice`
+- Daily summary for a date: `GET /summary?user=alice&date=2024-06-01` (date defaults to today)
+- Log an activity: `POST /activities` with JSON body `{ "user": "alice", "name": "Swim", "calories": -250, "date": "2024-06-01" }`
 - List foods: `GET /foods`
 - List all logs: `GET /logs`
-- Daily summary for a date: `GET /summary?date=2024-06-01` (date defaults to today)
-- Log an activity: `POST /activities` with JSON body `{ "name": "Swim", "calories": -250, "date": "2024-06-01" }`
 - Log a food: `POST /foods` with JSON body `{ "name": "Toast", "calories": 120, "date": "2024-06-01" }`
 
 ### Development
