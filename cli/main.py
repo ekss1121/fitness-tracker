@@ -40,9 +40,10 @@ def cli(ctx: click.Context) -> None:
 
 
 @cli.command()
-def show() -> None:
+@click.option("--user", required=False, default="default", help="User identifier for the log.")
+def show(user: str) -> None:
     """Display totals for logged events."""
-    events = get_events()
+    events = get_events(user=user)
     if not events:
         click.secho("No events logged yet. Log food or activities to see a summary.", fg="yellow")
         return
@@ -58,13 +59,14 @@ def show() -> None:
     "event_date",
     help="ISO date (YYYY-MM-DD); defaults to today.",
 )
-def log(name: str, calories: float, event_date: str | None) -> None:
+@click.option("--user", required=False, default="default", help="User identifier for the log.")
+def log(name: str, calories: float, event_date: str | None, user: str) -> None:
     """Log a food (positive) or activity (negative) entry."""
     resolved_date = event_date or date.today().isoformat()
-    log_event(Event(name=name, calories=calories, date=resolved_date))
+    log_event(Event(user=user, name=name, calories=calories, date=resolved_date))
     emoji = _emoji("🍎", "OK") if calories > 0 else _emoji("🔥", "OK")
     click.secho(
-        f"{emoji} Logged '{name}' ({calories} cal) on {resolved_date}.",
+        f"{emoji} Logged '{name}' ({calories} cal) for user '{user}' on {resolved_date}.",
         fg="green",
     )
 

@@ -4,7 +4,7 @@ from events import Event, get_events
 
 
 def main() -> None:
-    events: List[Event] = get_events()
+    events: List[Event] = get_events(user="default")
 
     total_food = sum(event.calories for event in events if event.calories > 0)
     total_activities = sum(-event.calories for event in events if event.calories < 0)
@@ -24,9 +24,9 @@ def log_sample_events() -> None:
     """Example helper to log sample events when experimenting locally."""
     from events import log_event
 
-    eat_apple = Event(name="Apple", calories=95)
+    eat_apple = Event(user="default", name="Apple", calories=95)
     log_event(eat_apple)
-    run_5k = Event(name="Running 5K", calories=-300)
+    run_5k = Event(user="default", name="Running 5K", calories=-300)
     log_event(run_5k)
 
 

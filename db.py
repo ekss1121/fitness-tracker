@@ -1,5 +1,5 @@
 import sqlite3
-from typing import List, Tuple
+from typing import List
 
 from config import DB_PATH, TABLE_NAME
 
@@ -9,6 +9,7 @@ def _ensure_table_exists(connection: sqlite3.Connection) -> None:
         f"""
         CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user TEXT NOT NULL,
             name TEXT NOT NULL,
             calories REAL NOT NULL,
             event_date TEXT NOT NULL
@@ -17,23 +18,27 @@ def _ensure_table_exists(connection: sqlite3.Connection) -> None:
     )
 
 
-def insert_event(name: str, calories: float, event_date: str) -> None:
+def insert_event(user: str, name: str, calories: float, event_date: str) -> None:
     """Persist a single event row to SQLite."""
     with sqlite3.connect(DB_PATH) as connection:
         _ensure_table_exists(connection)
         connection.execute(
-            f"INSERT INTO {TABLE_NAME} (name, calories, event_date) VALUES (?, ?, ?)",
-            (name, calories, event_date),
+            f"INSERT INTO {TABLE_NAME} (user, name, calories, event_date) VALUES (?, ?, ?, ?)",
+            (user, name, calories, event_date),
         )
         connection.commit()
 
 
-def fetch_events() -> List[Tuple[str, float, str]]:
-    """Return all event rows ordered by insertion."""
+def fetch_events(user: str | None = None) -> List[tuple[str, str, float, str]]:
+    """Return all event rows ordered by insertion, optionally filtered by user."""
     with sqlite3.connect(DB_PATH) as connection:
         _ensure_table_exists(connection)
-        cursor = connection.execute(
-            f"SELECT name, calories, event_date FROM {TABLE_NAME} ORDER BY id"
-        )
+        query = f"SELECT user, name, calories, event_date FROM {TABLE_NAME}"
+        params: tuple[str, ...] = ()
+        if user is not None:
+            query += " WHERE user = ?"
+            params = (user,)
+        query += " ORDER BY id"
+        cursor = connection.execute(query, params)
         rows = cursor.fetchall()
-    return [(row[0], float(row[1]), row[2]) for row in rows]
+    return [(row[0], row[1], float(row[2]), row[3]) for row in rows]
