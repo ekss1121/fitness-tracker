@@ -31,8 +31,11 @@ This installs dependencies and the console script `fitness-tracker`.
 ### API Usage
 - Start the server: `uv run uvicorn api:app --reload`
 - List activities: `GET /activities`
+- List foods: `GET /foods`
+- List all logs: `GET /logs`
 - Daily summary for a date: `GET /summary?date=2024-06-01` (date defaults to today)
 - Log an activity: `POST /activities` with JSON body `{ "name": "Swim", "calories": -250, "date": "2024-06-01" }`
+- Log a food: `POST /foods` with JSON body `{ "name": "Toast", "calories": 120, "date": "2024-06-01" }`
 
 ### Development
 - Run app directly: `uv run python main.py`
