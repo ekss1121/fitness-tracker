@@ -1,6 +1,7 @@
 ## Fitness Tracker
 
 A simple calorie tracker that logs food and activities to a local SQLite database and reports daily totals. Includes a Click-based CLI for quick logging and summaries.
+Now also exposes a small FastAPI server for logging activities and retrieving summaries.
 
 ### Features
 - Log food (positive calories) and activities (negative calories) to `main.db`.
@@ -26,6 +27,12 @@ This installs dependencies and the console script `fitness-tracker`.
 - Log negative calories (activities): `uv run fitness-tracker log "Running 5K" -- -300`
   - The `--` separates options from a negative number.
 - Custom date: `uv run fitness-tracker log "Yoga" -150 --date 2025-01-05`
+
+### API Usage
+- Start the server: `uv run uvicorn api:app --reload`
+- List activities: `GET /activities`
+- Daily summary for a date: `GET /summary?date=2024-06-01` (date defaults to today)
+- Log an activity: `POST /activities` with JSON body `{ "name": "Swim", "calories": -250, "date": "2024-06-01" }`
 
 ### Development
 - Run app directly: `uv run python main.py`
